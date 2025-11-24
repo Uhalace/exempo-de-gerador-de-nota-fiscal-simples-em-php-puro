@@ -1,6 +1,66 @@
 <?php
 declare(strict_types=1);
 
+
+class Cliente
+{
+    private string $cliente;
+    private string $cpf;
+    
+    public function __construct(string $cliente, string $cpf)
+    {
+        $this->cliente = $cliente;
+        $this->cpf = $cpf;
+    }
+    
+    public function getResult(){
+        return "Cliente é: ".$this->cliente."\nCPF: ".$this->cpf;
+    }
+}
+
+function validaCliente(string $texto): string
+{
+    while(true){
+        $valor = trim(readline($texto));
+        
+        if($valor !== ""){
+            return (string) $valor;
+        }
+        
+        echo "Valor invalido, digite novamene \n";
+        
+    }
+}
+
+function validaCpf(string $mensagem): string
+{
+    while (true) {
+        $valor = trim(readline($mensagem));
+
+        // Verifica se não está vazio
+        if ($valor !== "") {
+            // Verifica se tem 14 caracteres
+            if (strlen($valor) === 14) {
+                // Verifica se tem 2 pontos e 1 hífen
+                if (substr_count($valor, ".") === 2 && substr_count($valor, "-") === 1) {
+                    // Remove pontos e hífen e checa se só restam números
+                    $somenteNumeros = str_replace([".", "-"], "", $valor);
+                    if (ctype_digit($somenteNumeros)) {
+                        return $valor; // CPF válido
+                    } else {
+                        echo "CPF deve conter apenas números, pontos e hífen.\n";
+                    }
+                } else {
+                    echo "CPF deve ter o formato 000.000.000-00 (2 pontos e 1 hífen).\n";
+                }
+            } else {
+                echo "CPF deve conter exatamente 14 caracteres (incluindo pontos e hífen).\n";
+            }
+        } else {
+            echo "CPF inválido, digite novamente.\n";
+        }
+    }
+}
 class Item
 {
     private ArrayObject $lista;
@@ -68,11 +128,14 @@ function desejaContinuar(string $mensagem): bool
 }
 
 
-// EXECUÇÃO 
+// Execução
 
+$cliente = validaCliente("Digite o nome do Cliente: ");
+$cpf = validaCpf("Digite o CPF do Cliente: ");
+
+$quest = new Cliente($cliente, $cpf);
 
 $carrinho = new Item();
-
 while (desejaContinuar("Deseja cadastrar item? (S/N): ")) {
 
     $codigo        = lerTexto("Digite o código: ");
@@ -82,7 +145,6 @@ while (desejaContinuar("Deseja cadastrar item? (S/N): ")) {
 
     $carrinho->adicionar($codigo, $descricao, $quantidade, $valorUnidade);
 }
-
 
 //IMPRESSÃO DA NOTA 
 
@@ -94,6 +156,7 @@ echo "\n
     Rua A, Nº Y – Bairro B – Cidade/UF
     CNPJ: 00.000.000/0000-00
 ";
+
 echo "=======================================================================\n";
 echo "COD    DESCRIÇÃO                    QTD      VAL UNIT        TOTAL\n";
 echo "-----------------------------------------------------------------------\n";
@@ -119,3 +182,4 @@ foreach ($lista as $item) {
 
 echo "=======================================================================\n";
 echo "Total da compra: R$ " . number_format($valor_bruto, 2, ",", ".") . "\n";
+echo $quest->getResult();
