@@ -1,66 +1,25 @@
 <?php
 declare(strict_types=1);
 
+## Classes
 
 class Cliente
 {
     private string $cliente;
     private string $cpf;
-    
+
     public function __construct(string $cliente, string $cpf)
     {
         $this->cliente = $cliente;
         $this->cpf = $cpf;
     }
-    
-    public function getResult(){
-        return "Cliente é: ".$this->cliente."\nCPF: ".$this->cpf;
+
+    public function getResult(): string
+    {
+        return "Cliente é: " . $this->cliente . "\nCPF: " . $this->cpf;
     }
 }
 
-function validaCliente(string $texto): string
-{
-    while(true){
-        $valor = trim(readline($texto));
-        
-        if($valor !== ""){
-            return (string) $valor;
-        }
-        
-        echo "Valor invalido, digite novamene \n";
-        
-    }
-}
-
-function validaCpf(string $mensagem): string
-{
-    while (true) {
-        $valor = trim(readline($mensagem));
-
-        // Verifica se não está vazio
-        if ($valor !== "") {
-            // Verifica se tem 14 caracteres
-            if (strlen($valor) === 14) {
-                // Verifica se tem 2 pontos e 1 hífen
-                if (substr_count($valor, ".") === 2 && substr_count($valor, "-") === 1) {
-                    // Remove pontos e hífen e checa se só restam números
-                    $somenteNumeros = str_replace([".", "-"], "", $valor);
-                    if (ctype_digit($somenteNumeros)) {
-                        return $valor; // CPF válido
-                    } else {
-                        echo "CPF deve conter apenas números, pontos e hífen.\n";
-                    }
-                } else {
-                    echo "CPF deve ter o formato 000.000.000-00 (2 pontos e 1 hífen).\n";
-                }
-            } else {
-                echo "CPF deve conter exatamente 14 caracteres (incluindo pontos e hífen).\n";
-            }
-        } else {
-            echo "CPF inválido, digite novamente.\n";
-        }
-    }
-}
 class Item
 {
     private ArrayObject $lista;
@@ -91,9 +50,46 @@ class Item
     }
 }
 
+## Funções de Validação e Leitura de Entrada
 
-//FUNÇÕES AUXILIARES 
+function validaCliente(string $texto): string
+{
+    while (true) {
+        $valor = trim(readline($texto));
 
+        if ($valor !== "") {
+            return (string)$valor;
+        }
+
+        echo "Valor invalido, digite novamene \n";
+    }
+}
+
+function validaCpf(string $mensagem): string
+{
+    while (true) {
+        $valor = trim(readline($mensagem));
+
+        if ($valor !== "") {
+            if (strlen($valor) === 14) {
+                if (substr_count($valor, ".") === 2 && substr_count($valor, "-") === 1) {
+                    $somenteNumeros = str_replace([".", "-"], "", $valor);
+                    if (ctype_digit($somenteNumeros)) {
+                        return $valor;
+                    } else {
+                        echo "CPF deve conter apenas números, pontos e hífen.\n";
+                    }
+                } else {
+                    echo "CPF deve ter o formato 000.000.000-00 (2 pontos e 1 hífen).\n";
+                }
+            } else {
+                echo "CPF deve conter exatamente 14 caracteres (incluindo pontos e hífen).\n";
+            }
+        } else {
+            echo "CPF inválido, digite novamente.\n";
+        }
+    }
+}
 
 function lerNumero(string $mensagem): float
 {
@@ -127,8 +123,21 @@ function desejaContinuar(string $mensagem): bool
     return $resp === "s";
 }
 
+## Funções de Cálculo
 
-// Execução
+function calcularDesconto(float $total): float
+{
+    if ($total > 200) {
+        return $total * 0.10;
+    }
+    if ($total > 100) {
+        return $total * 0.05;
+    }
+
+    return 0.0;
+}
+
+## Execução Principal
 
 $cliente = validaCliente("Digite o nome do Cliente: ");
 $cpf = validaCpf("Digite o CPF do Cliente: ");
@@ -146,8 +155,7 @@ while (desejaContinuar("Deseja cadastrar item? (S/N): ")) {
     $carrinho->adicionar($codigo, $descricao, $quantidade, $valorUnidade);
 }
 
-//IMPRESSÃO DA NOTA 
-
+## Impressão da Nota
 
 $lista = $carrinho->getLista();
 
@@ -158,7 +166,7 @@ echo "\n
 ";
 
 echo "=======================================================================\n";
-echo "COD    DESCRIÇÃO                    QTD      VAL UNIT        TOTAL\n";
+echo "COD    DESCRIÇÃO                 QTD     VAL UNIT      TOTAL\n";
 echo "-----------------------------------------------------------------------\n";
 
 $valor_bruto = 0;
@@ -179,7 +187,35 @@ foreach ($lista as $item) {
 
     $valor_bruto += $item['valor_total'];
 }
+$desconto = calcularDesconto($valor_bruto);
+$valpag = $valor_bruto - $desconto;
+$valor_recebido = 0;
+$troco = 0;
 
 echo "=======================================================================\n";
 echo "Total da compra: R$ " . number_format($valor_bruto, 2, ",", ".") . "\n";
-echo $quest->getResult();
+echo "Desconto de R$: " . number_format($desconto, 2, ",", ".") . "\n";
+echo "Total a pagar: R$ " . number_format($valpag, 2, ",", ".") . "\n";
+echo $quest->getResult() . "\n";
+
+$metodo_pag = strtolower(lerTexto("Método de pagamento: "));
+
+if ($metodo_pag === "dinheiro") {
+    $valor_recebido = lerNumero("Digite o valor recebido: ");
+    if ($valor_recebido > $valpag) {
+        $troco = $valor_recebido - $valpag;
+    } else {
+        $troco = 0;
+    }
+}
+
+echo "=======================================================================\n";
+echo "Método de pagamento usado: $metodo_pag\n";
+
+if ($metodo_pag === "dinheiro") {
+    echo "Valor recebido: R$ " . number_format($valor_recebido, 2, ",", ".") . "\n";
+    echo "Troco: R$ " . number_format($troco, 2, ",", ".") . "\n";
+}
+
+echo "Valor final da compra: R$ " . number_format($valpag, 2, ",", ".") . "\n";
+?>
